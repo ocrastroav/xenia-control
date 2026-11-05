@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# Daemon de perfil de rendimiento: modo "auto" (performance en AC / ahorro en bateria)
+# o un perfil fijo. Lee /run/clevo-profile.control, publica /run/clevo-profile.status.
+CONTROL=/run/clevo-profile.control
+STATUS=/run/clevo-profile.status
+TOOL=/usr/local/bin/clevo-acpi-control
+CONF=/etc/clevo-profile.conf
+
+AC_PROFILE=performance
+BAT_PROFILE=quiet
+[ -r "$CONF" ] && . "$CONF"
+
+# localizar el sysfs del adaptador de corriente
+ACONLINE=""
+for p in /sys/class/power_supply/AC*/online /sys/class/power_supply/ADP*/online /sys/class/power_supply/ACAD/online; do
+  [ -e "$p" ] && { ACONLINE="$p"; break; }
+done
+
+# Ajusta CPU (turbo, frecuencia maxima y PPD) segun el perfil objetivo.
+apply_cpu() {
+  local p="$1" turbo ppd
+  case "$p" in
+    performance)   turbo=0; ppd=performance ;;
+    entertainment) turbo=0; ppd=balanced ;;
+    saving)        turbo=0; ppd=balanced ;;
+    quiet)         turbo=1; ppd=power-saver ;;
+    *)             turbo=0; ppd=balanced ;;
+  esac
+  # PPD gestiona EPP/governor
+  command -v powerprofilesctl >/dev/null 2>&1 && powerprofilesctl set "$ppd" 2>/dev/null || true
+  # Turbo (lo que a PPD se le escapa en este equipo)
+  local NT=/sys/devices/system/cpu/intel_pstate/no_turbo
+  [ -e "$NT" ] && echo "$turbo" > "$NT" 2>/dev/null
+  # Alinear scaling_max_freq con el maximo permitido (tras fijar el turbo)
+  local c
+  for c in /sys/devices/system/cpu/cpu*/cpufreq; do
+    [ -e "$c/cpuinfo_max_freq" ] && [ -w "$c/scaling_max_freq" ] && \
+      cat "$c/cpuinfo_max_freq" > "$c/scaling_max_freq" 2>/dev/null
+  done
+}
+
+modprobe acpi_call 2>/dev/null
+[ -e "$CONTROL" ] || echo auto > "$CONTROL"
+chmod 666 "$CONTROL" 2>/dev/null
+
+trap 'exit 0' TERM INT
+last=""
+tick=0
+while true; do
+  mode=$(tr -d '[:space:]' < "$CONTROL" 2>/dev/null)
+  [ -z "$mode" ] && mode=auto
+  if [ -n "$ACONLINE" ]; then online=$(cat "$ACONLINE" 2>/dev/null); else online=1; fi
+  [ -z "$online" ] && online=1
+
+  if [ "$mode" = "auto" ]; then
+    [ "$online" = "1" ] && target="$AC_PROFILE" || target="$BAT_PROFILE"
+  else
+    target="$mode"
+  fi
+
+  # aplicar al cambiar, y re-afirmar cada ~30s (contrarresta resets por suspension)
+  if [ "$target" != "$last" ] || [ $((tick % 6)) -eq 0 ]; then
+    "$TOOL" set "$target" --force >/dev/null 2>&1
+    apply_cpu "$target"
+    last="$target"
+  fi
+
+  turbo=$(cat /sys/devices/system/cpu/intel_pstate/no_turbo 2>/dev/null)
+  [ "$turbo" = "0" ] && turbo=on || turbo=off
+  maxmhz=$(( $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2>/dev/null || echo 0) / 1000 ))
+  { printf "mode=%s\ntarget=%s\nac=%s\nturbo=%s\ncpumaxmhz=%s\n" \
+      "$mode" "$target" "$online" "$turbo" "$maxmhz"; } > "$STATUS.tmp" 2>/dev/null \
+    && mv "$STATUS.tmp" "$STATUS" 2>/dev/null
+  chmod 644 "$STATUS" 2>/dev/null
+
+  tick=$((tick + 1))
+  sleep 5
+done

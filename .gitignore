@@ -1,0 +1,12 @@
+# binarios compilados
+clevo-fanctl
+gpu-burn
+*.o
+*.ko
+*.mod
+*.mod.c
+
+# volcados de EC / ACPI (específicos del equipo, no van al repo)
+*.aml
+*.dsl
+ec-dump*.txt

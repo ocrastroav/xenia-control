@@ -2,11 +2,11 @@
 
 Control completo de **XENIA 15G** (barebone Tongfang/Clevo, i7-14700HX + RTX 4060) en Ubuntu:
 
-- 🌀 **Ventiladores** (los 3) con curva de temperatura automática + control manual.
-- 🎮 **GPU** desbloqueada a **105W** (perfil "performance" vía ACPI del fabricante).
-- ⚡ **CPU** con Turbo + frecuencia máxima (y PL1/PL2 altos del perfil firmware).
-- 🔌 Cambio **automático según corriente/batería** (performance enchufado, ahorro en batería).
-- 🖥️ Una sola **GUI** con pestañas (Ventiladores + Rendimiento).
+- **Ventiladores** (los 3) con curva de temperatura automática + control manual.
+- **GPU** desbloqueada a **105W** (perfil "performance" vía ACPI del fabricante).
+- **CPU** con Turbo + frecuencia máxima (y PL1/PL2 altos del perfil firmware).
+- Cambio **automático según corriente/batería** (performance enchufado, ahorro en batería).
+- Una sola **GUI** con pestañas (Ventiladores + Rendimiento).
 
 ## Capturas
 

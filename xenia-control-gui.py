@@ -182,6 +182,10 @@ class App(Gtk.Window):
         super().__init__(title="XENIA Control")
         self.set_border_width(8)
         self.set_default_size(380, -1)
+        try:
+            self.set_icon_from_file("/usr/share/icons/hicolor/scalable/apps/xenia-control.svg")
+        except Exception:
+            self.set_icon_name("xenia-control")
         nb = Gtk.Notebook()
         self.add(nb)
         self.fan = FanTab()

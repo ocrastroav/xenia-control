@@ -45,6 +45,7 @@ echo "== 4/7  Instalando binarios =="
 install -m 755 "$DIR/clevo-acpi-control"    "$BIN/clevo-acpi-control"
 install -m 755 "$DIR/clevo-profiled"        "$BIN/clevo-profiled"
 install -m 755 "$DIR/xenia-control-gui.py"  "$BIN/xenia-control"
+install -Dm 644 "$DIR/xenia-control.svg"    /usr/share/icons/hicolor/scalable/apps/xenia-control.svg
 [[ -e /etc/clevo-profile.conf ]] || install -m 644 "$DIR/clevo-profile.conf" /etc/clevo-profile.conf
 
 echo "== 5/7  Limpiando instalaciones previas sueltas =="
@@ -98,10 +99,14 @@ Type=Application
 Name=XENIA Control
 Comment=Ventiladores, GPU y rendimiento
 Exec=/usr/local/bin/xenia-control
-Icon=cs-xfce4-sensors
+Icon=xenia-control
 Terminal=false
 Categories=System;Settings;
 EOF
+
+# refrescar caches de iconos y lanzadores
+gtk-update-icon-cache -f /usr/share/icons/hicolor >/dev/null 2>&1 || true
+update-desktop-database >/dev/null 2>&1 || true
 
 echo "== 7/7  Activando servicios =="
 systemctl daemon-reload

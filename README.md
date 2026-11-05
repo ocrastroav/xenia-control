@@ -8,6 +8,12 @@ Control completo de **XENIA 15G** (barebone Tongfang/Clevo, i7-14700HX + RTX 406
 - 🔌 Cambio **automático según corriente/batería** (performance enchufado, ahorro en batería).
 - 🖥️ Una sola **GUI** con pestañas (Ventiladores + Rendimiento).
 
+## Capturas
+
+| Ventiladores | Rendimiento |
+|:---:|:---:|
+| ![Pestaña de ventiladores](docs/gui-ventiladores.png) | ![Pestaña de rendimiento](docs/gui-rendimiento.png) |
+
 ## Instalación (incluido tras formatear)
 
 Respalda esta carpeta completa. En el equipo nuevo:
